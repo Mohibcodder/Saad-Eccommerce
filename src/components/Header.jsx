@@ -1,4 +1,3 @@
-// src/components/Header.jsx
 'use client';
 
 import { useState, useEffect } from "react";
@@ -10,6 +9,7 @@ import { CiUser, CiMenuBurger, CiSearch } from "react-icons/ci";
 import { IoBagOutline } from "react-icons/io5";
 import Link from "next/link";
 import Chaticon from "./Chaticon";
+import { useCart } from '../context/CartContext'; // Import useCart hook
 
 function Header() {
   const [showNavbar, setShowNavbar] = useState(false);
@@ -48,6 +48,8 @@ function Header() {
     };
   }, []);
 
+  const { cartItems, removeFromCart, updateCartQuantity, getCartTotal, getTotalItems } = useCart(); // Use cart state and functions
+
   return (
     <div className="sticky top-0 z-20 border-b border-black">
       <div className={`bg-black text-white p-2 text-center ${announmentClass}`}>
@@ -69,9 +71,8 @@ function Header() {
             </Navbar.Toggle>
 
             {/* Logo - Wrap Navbar.Brand content with Link */}
-            <div className="relative top-5 hidden sm:block">
+            <div className="relative hidden sm:block">
               <Link href="/" passHref legacyBehavior>
-                {/* Specify as="div" for Navbar.Brand to prevent it from rendering an <a> tag */}
                 <Navbar.Brand as="div">
                   <img
                     src="//baroque.pk/cdn/shop/files/LOGO_PNG_V01.png?v=1689675712"
@@ -82,9 +83,8 @@ function Header() {
               </Link>
             </div>
 
-            <div className="relative top-5 block sm:hidden">
+            <div className="relative block sm:hidden">
               <Link href="/" passHref legacyBehavior>
-                {/* Specify as="div" for Navbar.Brand to prevent it from rendering an <a> tag */}
                 <Navbar.Brand as="div">
                   <img
                     src="//baroque.pk/cdn/shop/files/LOGO_PNG_V01.png?v=1689675712"
@@ -101,7 +101,14 @@ function Header() {
                   <CiUser className="w-4 h-4 text-black no-underline" />
                 </Link>
                 <CiSearch className="w-4 h-4 text-black" onClick={toggleSearchBar} />
-                <IoBagOutline className="w-4 h-4 text-black" onClick={handleBagShow} />
+                <div className="relative">
+                  <IoBagOutline className="w-4 h-4 text-black cursor-pointer" onClick={handleBagShow} />
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </div>
               </Navbar.Brand>
             </div>
 
@@ -110,8 +117,15 @@ function Header() {
                 <Link href="/Loginpage" onClick={closeAllOverlays}>
                   <CiUser className="w-6 h-6 text-black no-underline" />
                 </Link>
-                <CiSearch className="w-6 h-6 text-black" onClick={toggleSearchBar} />
-                <IoBagOutline className="w-6 h-6 text-black" onClick={handleBagShow} />
+                <CiSearch className="w-6 h-6 text-black cursor-pointer" onClick={toggleSearchBar} />
+                <div className="relative">
+                  <IoBagOutline className="w-6 h-6 text-black cursor-pointer" onClick={handleBagShow} />
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </div>
               </Navbar.Brand>
             </div>
 
@@ -173,7 +187,7 @@ function Header() {
 
             <Offcanvas show={showBag} onHide={handleBagClose} placement="end">
               <Offcanvas.Header closeButton>
-                <Offcanvas.Title>CART</Offcanvas.Title>
+                <Offcanvas.Title>CART ({getTotalItems()})</Offcanvas.Title>
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <div className="flex justify-center">
@@ -186,34 +200,53 @@ function Header() {
                       You are eligible for free shipping.
                     </div>
 
-                    <div className="flex items-center mb-6">
-                      <img
-                        src="https://cdn.shopify.com/s/files/1/2277/5269/files/126_0d9a3c70-1ded-4eaf-ae13-2eb1cc983a1d.jpg?v=1726813941&width=120"
-                        alt="Product"
-                        className="w-24 h-32 object-cover rounded-lg mr-4"
-                      />
-                      <div className="flex flex-col w-full">
-                        <span className="text-xs uppercase text-gray-600">Unstitched</span>
-                        <span className="font-semibold">Embroidered Printed Lawn UF-711</span>
-                        <span className="text-lg font-bold">PKR 14,990.00</span>
-                        <span className="text-sm text-gray-500">Stitched / XS</span>
-
-                        <div className="flex items-center mt-2">
-                          <button className="border px-2 py-1">-</button>
-                          <input
-                            type="text"
-                            value="1"
-                            readOnly
-                            className="text-center w-12 border-t border-b px-2 py-1"
+                    {cartItems.length === 0 ? (
+                      <p className="text-center text-gray-500">Your cart is empty.</p>
+                    ) : (
+                      cartItems.map((item) => (
+                        <div key={`${item.id}-${item.selectedType}-${item.selectedSize}`} className="flex items-center mb-6">
+                          <img
+                            src={item.img}
+                            alt={item.name}
+                            className="w-24 h-32 object-cover rounded-lg mr-4"
                           />
-                          <button className="border px-2 py-1">+</button>
-                        </div>
+                          <div className="flex flex-col w-full">
+                            <span className="text-xs uppercase text-gray-600">{item.category}</span>
+                            <span className="font-semibold">{item.name}</span>
+                            <span className="text-lg font-bold">PKR {(item.price * item.quantity).toLocaleString()}</span>
+                            <span className="text-sm text-gray-500">{item.selectedType} / {item.selectedSize}</span>
 
-                        <button className="text-sm hover:underline">
-                          Remove
-                        </button>
-                      </div>
-                    </div>
+                            <div className="flex items-center mt-2">
+                              <button
+                                className="border px-2 py-1"
+                                onClick={() => updateCartQuantity(item.id, item.selectedType, item.selectedSize, item.quantity - 1)}
+                              >
+                                -
+                              </button>
+                              <input
+                                type="text"
+                                value={item.quantity}
+                                readOnly
+                                className="text-center w-12 border-t border-b px-2 py-1"
+                              />
+                              <button
+                                className="border px-2 py-1"
+                                onClick={() => updateCartQuantity(item.id, item.selectedType, item.selectedSize, item.quantity + 1)}
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            <button
+                              className="text-sm hover:underline text-left mt-1"
+                              onClick={() => removeFromCart(item.id, item.selectedType, item.selectedSize)}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
 
                     <div className="text-sm text-gray-500 mb-4">
                       Taxes and shipping calculated at checkout
@@ -221,8 +254,11 @@ function Header() {
 
                     <div className="text-center">
                       <Link href="/LastForm" onClick={handleBagClose}>
-                        <button className="bg-black text-white w-full py-3 rounded-lg text-lg">
-                          CHECKOUT - PKR 14,990.00
+                        <button
+                          className="bg-black text-white w-full py-3 rounded-lg text-lg"
+                          disabled={cartItems.length === 0} // Disable if cart is empty
+                        >
+                          CHECKOUT - PKR {getCartTotal().toLocaleString()}
                         </button>
                       </Link>
                     </div>

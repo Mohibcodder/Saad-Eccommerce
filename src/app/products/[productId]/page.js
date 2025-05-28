@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from 'next/navigation'; // Import usePathname for client-side path access
+import { usePathname } from 'next/navigation';
 import Carousel from "react-bootstrap/Carousel";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -14,14 +14,12 @@ import { PiAirplaneTiltLight } from "react-icons/pi";
 import { GiReturnArrow } from "react-icons/gi";
 import { BiLeaf } from "react-icons/bi";
 
-import Thirdpart from "../../../components/Thirdpart"; // Updated path
-import Thirdbuttonprop from "../../../components/Thirdbuttonprop"; // Updated path
-import { allProducts } from '../../../components/Data'; // Path to your centralized data
+import Thirdpart from "../../../components/Thirdpart";
+import Thirdbuttonprop from "../../../components/Thirdbuttonprop";
+import { allProducts } from '../../../components/Data';
 
-
-function ProductDetailPage() { // Remove `params` from props if using usePathname
+function ProductDetailPage() {
   const pathname = usePathname();
-  // Extract productId from the pathname, e.g., /products/rtw-1 -> rtw-1
   const productId = pathname.split('/').pop();
 
   const [product, setProduct] = useState(null);
@@ -29,6 +27,7 @@ function ProductDetailPage() { // Remove `params` from props if using usePathnam
   const [error, setError] = useState(null);
 
   const [selectedType, setSelectedType] = useState("UNSTITCHED");
+  const [selectedSize, setSelectedSize] = useState("DEFAULT"); // New state for selected size
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
@@ -40,6 +39,9 @@ function ProductDetailPage() { // Remove `params` from props if using usePathnam
       if (foundProduct) {
         setProduct(foundProduct);
         setSelectedType(foundProduct.productType === 'Stitched' ? 'STITCHED' : 'UNSTITCHED');
+        // Reset size and quantity on product change
+        setSelectedSize("DEFAULT");
+        setQuantity(1);
       } else {
         setError("Product not found.");
       }
@@ -48,6 +50,7 @@ function ProductDetailPage() { // Remove `params` from props if using usePathnam
   }, [productId]);
 
   const handleTypeChange = (val) => setSelectedType(val);
+  const handleSizeChange = (e) => setSelectedSize(e.target.value); // Handler for size change
   const handleQuantityChange = (amount) => {
     if (quantity + amount > 0) {
       setQuantity(quantity + amount);
@@ -142,8 +145,12 @@ function ProductDetailPage() { // Remove `params` from props if using usePathnam
 
                   <div className="space-y-2 mb-4">
                     <h4 className="text-md text-gray-700">Size:</h4>
-                    <Form.Select aria-label="Default select size">
-                      <option value="default">DEFAULT</option>
+                    <Form.Select
+                      aria-label="Default select size"
+                      value={selectedSize} // Controlled component
+                      onChange={handleSizeChange} // Handle size change
+                    >
+                      <option value="DEFAULT">DEFAULT</option>
                       <option value="XS">XS</option>
                       <option value="S">S</option>
                       <option value="M">M</option>
@@ -172,7 +179,13 @@ function ProductDetailPage() { // Remove `params` from props if using usePathnam
                         +
                       </Button>
                     </div>
-                    <Thirdbuttonprop product={product} />
+                    {/* Pass product, selectedType, selectedSize, and quantity to Thirdbuttonprop */}
+                    <Thirdbuttonprop
+                      product={product}
+                      selectedType={selectedType}
+                      selectedSize={selectedSize}
+                      quantity={quantity}
+                    />
                   </div>
                 </div>
               </div>
