@@ -5,7 +5,7 @@ function Smallpics(props) {
     <>
       <div className="relative overflow-hidden flex flex-col items-center justify-center text-center">
         {/* Image Container */}
-        <div className="relative w-full h-[450px] overflow-hidden">
+        <div className="relative w-full h-[550px] overflow-hidden">
           <img
             className="absolute inset-0 w-full h-full object-cover cursor-pointer transition-transform duration-[5000ms] ease overflow-hidden hover:scale-125"
             src={props.src}

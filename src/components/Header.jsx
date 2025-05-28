@@ -1,4 +1,6 @@
-'use client'
+// src/components/Header.jsx
+'use client';
+
 import { useState, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
@@ -14,7 +16,7 @@ function Header() {
   const [showBag, setShowBag] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
 
-  const [announment, setAnnounment] = useState("bg-light");
+  const [announmentClass, setAnnounmentClass] = useState("");
 
   const handleNavbarClose = () => setShowNavbar(false);
   const handleNavbarShow = () => setShowNavbar(true);
@@ -24,48 +26,53 @@ function Header() {
 
   const toggleSearchBar = () => setShowSearchBar(!showSearchBar);
 
-  // Scroll event listener
+  const closeAllOverlays = () => {
+    setShowNavbar(false);
+    setShowBag(false);
+    setShowSearchBar(false);
+  };
+
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY >0) { 
-        setAnnounment("hidden overflow-hidden"); 
-      } 
-      else {
-         
-        setAnnounment(""); 
+      if (window.scrollY > 0) {
+        setAnnounmentClass("hidden overflow-hidden");
+      } else {
+        setAnnounmentClass("");
       }
     };
 
     window.addEventListener("scroll", handleScroll);
-  });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
     <div className="sticky top-0 z-20 border-b border-black">
-      {/* Announcement Bar */}
-      <div className={`bg-black text-white p-2 text-center ${announment}`}>
+      <div className={`bg-black text-white p-2 text-center ${announmentClass}`}>
         WE ARE OFFERING FREE SHIPPING!!
       </div>
 
-      {/* Sticky Navbar */}
       <div>
         <Navbar
           collapseOnSelect
           expand="false"
           bg="white"
           variant="light"
-          className={`flex items-center justify-between`} 
+          className={`flex items-center justify-between`}
           style={{ zIndex: 1000 }}
         >
           <Container fluid>
-            {/* Offcanvas Toggle Button */}
             <Navbar.Toggle aria-controls="offcanvasNavbar" onClick={handleNavbarShow} className="border-0">
               <CiMenuBurger className="text-2xl" />
             </Navbar.Toggle>
 
-            {/* Logo */}
+            {/* Logo - Wrap Navbar.Brand content with Link */}
             <div className="relative top-5 hidden sm:block">
-              <Link href="/">
-                <Navbar.Brand > 
+              <Link href="/" passHref legacyBehavior>
+                {/* Specify as="div" for Navbar.Brand to prevent it from rendering an <a> tag */}
+                <Navbar.Brand as="div">
                   <img
                     src="//baroque.pk/cdn/shop/files/LOGO_PNG_V01.png?v=1689675712"
                     alt="Logo"
@@ -76,8 +83,9 @@ function Header() {
             </div>
 
             <div className="relative top-5 block sm:hidden">
-              <Link href="/">
-                <Navbar.Brand>
+              <Link href="/" passHref legacyBehavior>
+                {/* Specify as="div" for Navbar.Brand to prevent it from rendering an <a> tag */}
+                <Navbar.Brand as="div">
                   <img
                     src="//baroque.pk/cdn/shop/files/LOGO_PNG_V01.png?v=1689675712"
                     alt="Logo"
@@ -87,44 +95,39 @@ function Header() {
               </Link>
             </div>
 
-            {/* User, Search, and Bag Icons */}
-            <div className="block sm:hidden">            
+            <div className="block sm:hidden">
               <Navbar.Brand className="flex gap-2">
-              <Link href="/Loginpage">
-                <CiUser className="w-4 h-4" />
-              </Link>
-              <CiSearch className="w-4 h-4" onClick={toggleSearchBar} />
-              <IoBagOutline className="w-4 h-4" onClick={handleBagShow} />
-            </Navbar.Brand>
+                <Link href="/Loginpage" onClick={closeAllOverlays}>
+                  <CiUser className="w-4 h-4 text-black no-underline" />
+                </Link>
+                <CiSearch className="w-4 h-4 text-black" onClick={toggleSearchBar} />
+                <IoBagOutline className="w-4 h-4 text-black" onClick={handleBagShow} />
+              </Navbar.Brand>
             </div>
-            
-            <div className="hidden sm:block">           
+
+            <div className="hidden sm:block">
               <Navbar.Brand className="flex gap-3 ">
-              <Link href="/Loginpage">
-                <CiUser className="w-6 h-6" />
-              </Link>
-              <CiSearch className="w-6 h-6" onClick={toggleSearchBar} />
-              <IoBagOutline className="w-6 h-6" onClick={handleBagShow} />
-            </Navbar.Brand>
+                <Link href="/Loginpage" onClick={closeAllOverlays}>
+                  <CiUser className="w-6 h-6 text-black no-underline" />
+                </Link>
+                <CiSearch className="w-6 h-6 text-black" onClick={toggleSearchBar} />
+                <IoBagOutline className="w-6 h-6 text-black" onClick={handleBagShow} />
+              </Navbar.Brand>
             </div>
- 
-            {/* Search Bar */}
+
             {showSearchBar && (
-              <div className="absolute top-14  left-0 w-full h-full bg-white z-30 flex items-center p-4">
+              <div className="absolute top-0 left-0 w-full h-full bg-white z-30 flex items-center p-4">
                 <input
                   type="text"
                   className="border border-gray-300 rounded-lg w-full p-2 text-lg"
                   placeholder="Search for..."
                 />
-                <button onClick={toggleSearchBar} className="ml-4 text-2xl">
+                <button onClick={toggleSearchBar} className="ml-4 text-2xl text-black">
                   ✖
                 </button>
               </div>
             )}
-            
-            
 
-            {/* Offcanvas for Navbar */}
             <Navbar.Offcanvas
               id="offcanvasNavbar"
               aria-labelledby="offcanvasNavbarLabel"
@@ -137,36 +140,37 @@ function Header() {
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="font-serif justify-content-end flex-grow-1 pe-3 text-1xl tracking-widest font-medium uppercase gap-3">
-                  <Link href="/Chantelle">
-                     Chantelle
+                  <Link href="/Chantelle" onClick={handleNavbarClose} className="text-black no-underline hover:text-gray-700">
+                    Chantelle
                   </Link>
                   <hr />
-                  <Link href="/secondpage">
-                   Unstitched
+                  <Link href="/Unstitched" onClick={handleNavbarClose} className="text-black no-underline hover:text-gray-700">
+                    Unstitched
                   </Link>
                   <hr />
-                  <Link href="/Shawls">
-                   Shawls
+                  <Link href="/Shawls" onClick={handleNavbarClose} className="text-black no-underline hover:text-gray-700">
+                    Shawls
                   </Link>
                   <hr />
-                  <Link href="/Readytowear">
-                  Ready to Wear
+                  <Link href="/Readytowear" onClick={handleNavbarClose} className="text-black no-underline hover:text-gray-700">
+                    Ready to Wear
                   </Link>
                   <hr />
-                  <Link href="/Specialprices">
-                  Special Prices
+                  <Link href="/Specialprices" onClick={handleNavbarClose} className="text-black no-underline hover:text-gray-700">
+                    Special Prices
                   </Link>
                   <hr />
-                  <Link href="/Bottoms">
+                  <Link href="/Bottoms" onClick={handleNavbarClose} className="text-black no-underline hover:text-gray-700">
                     Bottoms
                   </Link>
                   <hr />
-                <Link href ="/Dupattas"> Dupattas</Link>
+                  <Link href="/Dupattas" onClick={handleNavbarClose} className="text-black no-underline hover:text-gray-700">
+                    Dupattas
+                  </Link>
                 </Nav>
               </Offcanvas.Body>
             </Navbar.Offcanvas>
 
-            {/* Offcanvas for Bag */}
             <Offcanvas show={showBag} onHide={handleBagClose} placement="end">
               <Offcanvas.Header closeButton>
                 <Offcanvas.Title>CART</Offcanvas.Title>
@@ -216,7 +220,7 @@ function Header() {
                     </div>
 
                     <div className="text-center">
-                      <Link to="/LastForm">
+                      <Link href="/LastForm" onClick={handleBagClose}>
                         <button className="bg-black text-white w-full py-3 rounded-lg text-lg">
                           CHECKOUT - PKR 14,990.00
                         </button>
